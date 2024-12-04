@@ -9,8 +9,13 @@ import (
 	libp2p "github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
+	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
+	libp2pquic "github.com/libp2p/go-libp2p/p2p/transport/quic"
+	libp2pwebsocket "github.com/libp2p/go-libp2p/p2p/transport/websocket"
+	"github.com/multiformats/go-multiaddr"
 )
 
 type Node struct {
@@ -20,7 +25,20 @@ type Node struct {
 }
 
 func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo) (*Node, error) {
-	host, err := libp2p.New()
+	listenAddr, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/4001")
+
+	cm, err := connmgr.NewConnManager(100, 400, connmgr.WithGracePeriod(time.Minute))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create connection manager: %w", err)
+	}
+
+	host, err := libp2p.New(
+		libp2p.ListenAddrs(listenAddr),
+		libp2p.Transport(tcp.NewTCPTransport),
+		libp2p.Transport(libp2pquic.NewTransport),
+		libp2p.Transport(libp2pwebsocket.New),
+		libp2p.ConnectionManager(cm),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create libp2p host: %w", err)
 	}
@@ -83,4 +101,4 @@ func (n *Node) Start(ctx context.Context) {
 	for _, addr := range n.Host.Addrs() {
 		fmt.Printf("Listening on %s/p2p/%s\n", addr, n.Host.ID().String())
 	}
-} 
+}

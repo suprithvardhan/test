@@ -1,0 +1,2 @@
+1) open terminal 
+2) type "go run main.go /ip4/49.204.110.159/tcp/4001/p2p/12D3KooWLtaHvPpRq5VE31zr5MyAqHZtvxRbTznX7Hcdt8NxxchL"
