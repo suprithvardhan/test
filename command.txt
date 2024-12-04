@@ -1,2 +1,30 @@
-1) open terminal 
-2) type "go run main.go /ip4/49.204.110.159/tcp/4001/p2p/12D3KooWLtaHvPpRq5VE31zr5MyAqHZtvxRbTznX7Hcdt8NxxchL"
+1) Access Your Router's Settings:
+   - Connect to your network (Wi-Fi or Ethernet).
+   - Open a web browser and enter your router's IP address in the address bar. Common IP addresses are `192.168.0.1` or `192.168.1.1`.
+   - Press Enter. You should see a login page for your router.
+   - Enter the admin username and password. If you haven't changed these, they might be the default values (often found on a sticker on the router or in the manual).
+
+2) Ensure Port Forwarding:
+   - Once logged in, locate the port forwarding section (this may be under "Advanced" or "NAT" settings).
+   - Add a new port forwarding rule:
+     - External Port: 4001
+     - Internal Port: 4001
+     - Internal IP Address: 192.168.0.103 (your local machine's IP)
+     - Protocol: TCP
+   - Save the settings and restart your router if necessary.
+
+3) Enable UPnP (Optional):
+   - In your router's settings, find the UPnP section.
+   - Enable UPnP to allow automatic port forwarding.
+   - Save the settings and restart your router if necessary.
+
+4) Open Terminal on the Second Machine:
+   - Ensure the second machine is connected to the internet.
+
+5) Run the Program:
+   - Type the following command in the terminal:
+     go run main.go /ip4/49.204.110.159/tcp/4001/p2p/12D3KooWLtaHvPpRq5VE31zr5MyAqHZtvxRbTznX7Hcdt8NxxchL
+
+6) Verify Connection:
+   - Check the terminal output for messages indicating successful connection and message exchange.
+   - If there are issues, double-check the port forwarding settings and ensure the public IP and ports are correctly set up.
