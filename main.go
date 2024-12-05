@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"libp2p_test/node"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -53,6 +54,18 @@ func main() {
 	}
 
 	n.Start(ctx)
+
+	// Log successful connection to the bootstrap node
+	log.Println("Successfully connected to the bootstrap node")
+
+	// Check for connected peers
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			peers := n.Host.Network().Peers()
+			log.Printf("Connected peers: %v\n", peers)
+		}
+	}()
 
 	// Print the peer ID and addresses
 	fmt.Printf("Node started with ID: %s\n", n.Host.ID().String())

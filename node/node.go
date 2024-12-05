@@ -85,6 +85,15 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 		Sub:        sub,
 	}
 
+	// Connect to bootstrap peers
+	for _, peerInfo := range bootstrapPeers {
+		if err := host.Connect(ctx, peerInfo); err != nil {
+			log.Printf("Failed to connect to bootstrap peer %s: %v", peerInfo.ID, err)
+		} else {
+			log.Printf("Connected to bootstrap peer %s", peerInfo.ID)
+		}
+	}
+
 	return node, nil
 }
 
