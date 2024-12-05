@@ -9,6 +9,7 @@ import (
 	libp2p "github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
@@ -24,7 +25,7 @@ type Node struct {
 	DHT    *dht.IpfsDHT
 }
 
-func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo) (*Node, error) {
+func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto.PrivKey) (*Node, error) {
 	listenAddr, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/4001")
 
 	cm, err := connmgr.NewConnManager(100, 400, connmgr.WithGracePeriod(time.Minute))
@@ -39,6 +40,7 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo) (*Node, error)
 
 	host, err := libp2p.New(
 		libp2p.ListenAddrs(listenAddr),
+		libp2p.Identity(privKey),
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(libp2pquic.NewTransport),
 		libp2p.Transport(libp2pwebsocket.New),

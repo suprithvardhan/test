@@ -4,3 +4,4 @@
 |-- main.go
 |-- node
     |-- node.go
+|-- node_key
