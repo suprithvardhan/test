@@ -1,8 +1,0 @@
-|-- .gitignore
-|-- command.txt
-|-- go.mod
-|-- go.sum
-|-- main.go
-|-- node
-    |-- node.go
-|-- node_key

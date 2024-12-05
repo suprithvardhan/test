@@ -2,8 +2,10 @@ package node
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	libp2p "github.com/libp2p/go-libp2p"
@@ -17,25 +19,23 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	libp2pwebsocket "github.com/libp2p/go-libp2p/p2p/transport/websocket"
 	"github.com/multiformats/go-multiaddr"
+	"libp2p_test/blockchain"
 )
 
 type Node struct {
-	Host   host.Host
-	PubSub *pubsub.PubSub
-	DHT    *dht.IpfsDHT
+	Host       host.Host
+	PubSub     *pubsub.PubSub
+	DHT        *dht.IpfsDHT
+	Blockchain *blockchain.Blockchain
+	Name       string
 }
 
-func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto.PrivKey) (*Node, error) {
+func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto.PrivKey, name string) (*Node, error) {
 	listenAddr, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/4001")
 
 	cm, err := connmgr.NewConnManager(100, 400, connmgr.WithGracePeriod(time.Minute))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create connection manager: %w", err)
-	}
-
-	// Define your static relay addresses here
-	staticRelays := []peer.AddrInfo{
-		// Add your relay peer addresses here
 	}
 
 	host, err := libp2p.New(
@@ -45,7 +45,6 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 		libp2p.Transport(libp2pquic.NewTransport),
 		libp2p.Transport(libp2pwebsocket.New),
 		libp2p.ConnectionManager(cm),
-		libp2p.EnableAutoRelayWithStaticRelays(staticRelays),
 		libp2p.EnableNATService(),
 	)
 	if err != nil {
@@ -73,11 +72,13 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 		return nil, fmt.Errorf("failed to create PubSub: %w", err)
 	}
 
-	return &Node{Host: host, PubSub: ps, DHT: kademliaDHT}, nil
+	bc := blockchain.NewBlockchain()
+
+	return &Node{Host: host, PubSub: ps, DHT: kademliaDHT, Blockchain: bc, Name: name}, nil
 }
 
 func (n *Node) Start(ctx context.Context) {
-	topic, err := n.PubSub.Join("libp2p-test")
+	topic, err := n.PubSub.Join("blockchain-sync")
 	if err != nil {
 		log.Fatalf("Failed to join topic: %v", err)
 	}
@@ -94,7 +95,24 @@ func (n *Node) Start(ctx context.Context) {
 				log.Fatalf("Failed to get next message: %v", err)
 			}
 			if msg.GetFrom() != n.Host.ID() {
-				fmt.Printf("Received message from %s: %s\n", msg.GetFrom(), string(msg.Data))
+				var transaction blockchain.Transaction
+				if err := json.Unmarshal(msg.Data, &transaction); err == nil {
+					fmt.Printf("Received transaction from %s: %+v\n", msg.GetFrom(), transaction)
+					n.Blockchain.AddTransaction(transaction)
+					continue
+				}
+
+				var block blockchain.Block
+				if err := json.Unmarshal(msg.Data, &block); err == nil {
+					fmt.Printf("Received block from %s: %+v\n", msg.GetFrom(), block)
+					// Validate and add the block to the blockchain
+					if n.Blockchain.IsValid() {
+						n.Blockchain.Blocks = append(n.Blockchain.Blocks, block)
+					}
+					continue
+				}
+
+				fmt.Printf("Received unknown message from %s: %s\n", msg.GetFrom(), string(msg.Data))
 			}
 		}
 	}()
@@ -102,8 +120,25 @@ func (n *Node) Start(ctx context.Context) {
 	go func() {
 		for {
 			time.Sleep(10 * time.Second)
-			if err := topic.Publish(ctx, []byte("hi")); err != nil {
-				log.Fatalf("Failed to publish message: %v", err)
+			transaction := blockchain.Transaction{ID: fmt.Sprintf("tx%d", rand.Intn(1000)), Amount: rand.Intn(100)}
+			data, _ := json.Marshal(transaction)
+			if err := topic.Publish(ctx, data); err != nil {
+				log.Fatalf("Failed to publish transaction: %v", err)
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			time.Sleep(1 * time.Minute) // Simulate mining every 1 minute
+			// Randomly decide if this node should mine
+			if rand.Intn(2) == 0 {
+				n.Blockchain.MineBlock(n.Name)
+				block := n.Blockchain.Blocks[len(n.Blockchain.Blocks)-1]
+				data, _ := json.Marshal(block)
+				if err := topic.Publish(ctx, data); err != nil {
+					log.Fatalf("Failed to publish block: %v", err)
+				}
 			}
 		}
 	}()

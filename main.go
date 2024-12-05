@@ -10,7 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"libp2p_test/node" // Adjusted import path to match your module and directory structure
+	"libp2p_test/node"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
@@ -19,6 +19,11 @@ import (
 const keyFilePath = "node_key"
 
 func main() {
+	if len(os.Args) < 2 {
+		log.Fatalf("Usage: go run main.go <node-name>")
+	}
+	nodeName := os.Args[1]
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -42,7 +47,7 @@ func main() {
 	// Pass the bootstrap peer to the NewNode function
 	bootstrapPeers := []peer.AddrInfo{*bootstrapPeerInfo}
 
-	n, err := node.NewNode(ctx, bootstrapPeers, privKey)
+	n, err := node.NewNode(ctx, bootstrapPeers, privKey, nodeName)
 	if err != nil {
 		log.Fatalf("Failed to create node: %v", err)
 	}
