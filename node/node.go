@@ -25,7 +25,7 @@ type Node struct {
 }
 
 func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo) (*Node, error) {
-	listenAddr, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/4001")
+	listenAddr, _ := multiaddr.NewMultiaddr("/ip4/192.168.0.103/tcp/4001")
 
 	cm, err := connmgr.NewConnManager(100, 400, connmgr.WithGracePeriod(time.Minute))
 	if err != nil {
