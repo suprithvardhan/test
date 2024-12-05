@@ -12,8 +12,8 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
-	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	libp2pquic "github.com/libp2p/go-libp2p/p2p/transport/quic"
+	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	libp2pwebsocket "github.com/libp2p/go-libp2p/p2p/transport/websocket"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -32,12 +32,19 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo) (*Node, error)
 		return nil, fmt.Errorf("failed to create connection manager: %w", err)
 	}
 
+	// Define your static relay addresses here
+	staticRelays := []peer.AddrInfo{
+		// Add your relay peer addresses here
+	}
+
 	host, err := libp2p.New(
 		libp2p.ListenAddrs(listenAddr),
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(libp2pquic.NewTransport),
 		libp2p.Transport(libp2pwebsocket.New),
 		libp2p.ConnectionManager(cm),
+		libp2p.EnableAutoRelayWithStaticRelays(staticRelays),
+		libp2p.EnableNATService(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create libp2p host: %w", err)
