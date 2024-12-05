@@ -26,7 +26,7 @@
     first run "go mod tidy" 
     and then run this below command 
 
-     go run main.go /ip4/49.204.110.159/tcp/4001/p2p/12D3KooWPtmnqJinAsW57ZY37sWKVGHibbwSvbPAuCnqNBdzxZXm
+   go run main.go /ip4/49.204.109.180/tcp/4001/p2p/12D3KooWJaTatmdkhX2qnTPizK6szNNdG97fpEE7Wi1EFKFe8cLG 
 
 6) Verify Connection:
    - Check the terminal output for messages indicating successful connection and message exchange.

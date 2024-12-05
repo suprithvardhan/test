@@ -1,21 +1,3 @@
-|-- blockchain-rust
-    |-- .gitignore
-    |-- Cargo.lock
-    |-- Cargo.toml
-    |-- merkle_tree.jpg
-    |-- README.md
-    |-- Screenshot20220105125717.png
-    |-- src
-        |-- block.rs
-        |-- blockchain.rs
-        |-- cli.rs
-        |-- errors.rs
-        |-- main.rs
-        |-- server.rs
-        |-- transaction.rs
-        |-- tx.rs
-        |-- utxoset.rs
-        |-- wallets.rs
 |-- command.txt
 |-- go.mod
 |-- go.sum
