@@ -1,3 +1,4 @@
+|-- .gitignore
 |-- command.txt
 |-- go.mod
 |-- go.sum
