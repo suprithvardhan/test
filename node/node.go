@@ -28,6 +28,7 @@ type Node struct {
 	DHT        *dht.IpfsDHT
 	Blockchain *blockchain.Blockchain
 	Name       string
+	Sub        *pubsub.Subscription
 }
 
 func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto.PrivKey, name string) (*Node, error) {
@@ -60,74 +61,76 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 		return nil, fmt.Errorf("failed to bootstrap DHT: %w", err)
 	}
 
-	// Connect to bootstrap peers
-	for _, peerAddr := range bootstrapPeers {
-		if err := host.Connect(ctx, peerAddr); err != nil {
-			log.Printf("Failed to connect to bootstrap peer %s: %v", peerAddr, err)
-		}
+	pubsubService, err := pubsub.NewGossipSub(ctx, host)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create pubsub service: %w", err)
 	}
 
-	ps, err := pubsub.NewGossipSub(ctx, host)
+	topic, err := pubsubService.Join("blockchain")
 	if err != nil {
-		return nil, fmt.Errorf("failed to create PubSub: %w", err)
-	}
-
-	bc := blockchain.NewBlockchain()
-
-	return &Node{Host: host, PubSub: ps, DHT: kademliaDHT, Blockchain: bc, Name: name}, nil
-}
-
-func (n *Node) Start(ctx context.Context) {
-	topic, err := n.PubSub.Join("blockchain-sync")
-	if err != nil {
-		log.Fatalf("Failed to join topic: %v", err)
+		return nil, fmt.Errorf("failed to join pubsub topic: %w", err)
 	}
 
 	sub, err := topic.Subscribe()
 	if err != nil {
-		log.Fatalf("Failed to subscribe to topic: %v", err)
+		return nil, fmt.Errorf("failed to subscribe to pubsub topic: %w", err)
 	}
 
+	node := &Node{
+		Host:       host,
+		PubSub:     pubsubService,
+		DHT:        kademliaDHT,
+		Blockchain: blockchain.NewBlockchain(),
+		Name:       name,
+		Sub:        sub,
+	}
+
+	return node, nil
+}
+
+func (n *Node) Start(ctx context.Context) {
+	// Handle incoming messages
 	go func() {
 		for {
-			msg, err := sub.Next(ctx)
+			msg, err := n.Sub.Next(ctx)
 			if err != nil {
-				log.Fatalf("Failed to get next message: %v", err)
+				log.Fatalf("Failed to read message: %v", err)
 			}
-			if msg.GetFrom() != n.Host.ID() {
-				var transaction blockchain.Transaction
-				if err := json.Unmarshal(msg.Data, &transaction); err == nil {
-					fmt.Printf("Received transaction from %s: %+v\n", msg.GetFrom(), transaction)
-					n.Blockchain.AddTransaction(transaction)
-					continue
-				}
 
-				var block blockchain.Block
-				if err := json.Unmarshal(msg.Data, &block); err == nil {
-					fmt.Printf("Received block from %s: %+v\n", msg.GetFrom(), block)
-					// Validate and add the block to the blockchain
-					if n.Blockchain.IsValid() {
-						n.Blockchain.Blocks = append(n.Blockchain.Blocks, block)
-					}
-					continue
-				}
-
-				fmt.Printf("Received unknown message from %s: %s\n", msg.GetFrom(), string(msg.Data))
+			var transaction blockchain.Transaction
+			if err := json.Unmarshal(msg.Data, &transaction); err == nil {
+				fmt.Printf("Received transaction from %s: %+v\n", msg.GetFrom(), transaction)
+				n.Blockchain.AddTransaction(transaction)
+				continue
 			}
+
+			var block blockchain.Block
+			if err := json.Unmarshal(msg.Data, &block); err == nil {
+				fmt.Printf("Received block from %s: %+v\n", msg.GetFrom(), block)
+				// Validate and add the block to the blockchain
+				if n.Blockchain.IsValid() {
+					n.Blockchain.Blocks = append(n.Blockchain.Blocks, block)
+				}
+				continue
+			}
+
+			fmt.Printf("Received unknown message from %s: %s\n", msg.GetFrom(), string(msg.Data))
 		}
 	}()
 
+	// Simulate transaction generation
 	go func() {
 		for {
 			time.Sleep(10 * time.Second)
 			transaction := blockchain.Transaction{ID: fmt.Sprintf("tx%d", rand.Intn(1000)), Amount: rand.Intn(100)}
 			data, _ := json.Marshal(transaction)
-			if err := topic.Publish(ctx, data); err != nil {
+			if err := n.PubSub.Publish("blockchain", data); err != nil {
 				log.Fatalf("Failed to publish transaction: %v", err)
 			}
 		}
 	}()
 
+	// Simulate mining
 	go func() {
 		for {
 			time.Sleep(1 * time.Minute) // Simulate mining every 1 minute
@@ -136,7 +139,7 @@ func (n *Node) Start(ctx context.Context) {
 				n.Blockchain.MineBlock(n.Name)
 				block := n.Blockchain.Blocks[len(n.Blockchain.Blocks)-1]
 				data, _ := json.Marshal(block)
-				if err := topic.Publish(ctx, data); err != nil {
+				if err := n.PubSub.Publish("blockchain", data); err != nil {
 					log.Fatalf("Failed to publish block: %v", err)
 				}
 			}

@@ -31,3 +31,26 @@
 6) Verify Connection:
    - Check the terminal output for messages indicating successful connection and message exchange.
    - If there are issues, double-check the port forwarding settings and ensure the public IP and ports are correctly set up.
+
+
+
+PS C:\Users\supri\Desktop\libp2p_test> go run main.go
+Listening on /ip4/127.0.0.1/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp
+Listening on /ip4/192.168.0.103/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp   
+Bootstrap node started with ID: 12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp
+Listening on /ip4/127.0.0.1/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp       
+Listening on /ip4/192.168.0.103/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp   
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+Received message from 12D3KooWJFrGcey1K43YAWRatMuNt1EjtpM6SyW8iwsdDFfEGKFR: hi
+2024/12/05 21:39:10 Shutting down...
