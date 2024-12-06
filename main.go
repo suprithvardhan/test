@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Define the bootstrap peer address
-	bootstrapPeerAddr, err := multiaddr.NewMultiaddr("/ip4/192.168.0.103/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp")
+	bootstrapPeerAddr, err := multiaddr.NewMultiaddr("/ip4/49.204.109.180/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp")
 	if err != nil {
 		log.Fatalf("Failed to create multiaddr: %v", err)
 	}
