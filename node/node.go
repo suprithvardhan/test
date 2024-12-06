@@ -42,11 +42,12 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 	host, err := libp2p.New(
 		libp2p.ListenAddrs(listenAddr),
 		libp2p.Identity(privKey),
+		libp2p.NATPortMap(),
+		libp2p.EnableAutoRelay(),
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(libp2pquic.NewTransport),
 		libp2p.Transport(libp2pwebsocket.New),
 		libp2p.ConnectionManager(cm),
-		libp2p.EnableNATService(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create libp2p host: %w", err)
