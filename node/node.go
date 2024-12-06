@@ -37,15 +37,26 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 		return nil, fmt.Errorf("failed to create connection manager: %w", err)
 	}
 
-	// Define static relay addresses
-	staticRelay, _ := multiaddr.NewMultiaddr("/ip4/192.168.0.103/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp")
-	relayInfo, _ := peer.AddrInfoFromP2pAddr(staticRelay)
+	peerSource := func(ctx context.Context, num int) <-chan peer.AddrInfo {
+		ch := make(chan peer.AddrInfo)
+		go func() {
+			defer close(ch)
+			for _, p := range bootstrapPeers {
+				select {
+				case ch <- p:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}()
+		return ch
+	}
 
 	host, err := libp2p.New(
 		libp2p.ListenAddrs(listenAddr),
 		libp2p.Identity(privKey),
 		libp2p.NATPortMap(),
-		libp2p.EnableAutoRelayWithStaticRelays([]peer.AddrInfo{*relayInfo}),
+		libp2p.EnableAutoRelayWithPeerSource(peerSource),
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.ConnectionManager(cm),
 	)

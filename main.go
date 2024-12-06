@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("Failed to load or create private key: %v", err)
 	}
 
-	// Define the bootstrap peer address
+	// Define the bootstrap peer address using the public IP
 	bootstrapPeerAddr, err := multiaddr.NewMultiaddr("/ip4/49.204.109.180/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp")
 	if err != nil {
 		log.Fatalf("Failed to create multiaddr: %v", err)
