@@ -53,6 +53,23 @@ func main() {
 		log.Fatalf("Failed to create node: %v", err)
 	}
 
+	// Attempt to connect to the bootstrap node
+	connected := false
+	for _, peerInfo := range bootstrapPeers {
+		if err := n.Host.Connect(ctx, peerInfo); err != nil {
+			log.Printf("Failed to connect to bootstrap peer %s: %v", peerInfo.ID, err)
+		} else {
+			log.Printf("Successfully connected to bootstrap peer %s", peerInfo.ID)
+			connected = true
+			break
+		}
+	}
+
+	if !connected {
+		log.Fatalf("Could not connect to any bootstrap peers")
+	}
+
+	// Start the node processes after successful connection
 	n.Start(ctx)
 
 	// Log successful connection to the bootstrap node
