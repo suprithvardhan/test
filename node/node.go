@@ -15,9 +15,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
-	libp2pquic "github.com/libp2p/go-libp2p/p2p/transport/quic"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
-	libp2pwebsocket "github.com/libp2p/go-libp2p/p2p/transport/websocket"
 	"github.com/multiformats/go-multiaddr"
 	"libp2p_test/blockchain"
 )
@@ -39,14 +37,16 @@ func NewNode(ctx context.Context, bootstrapPeers []peer.AddrInfo, privKey crypto
 		return nil, fmt.Errorf("failed to create connection manager: %w", err)
 	}
 
+	// Define static relay addresses
+	staticRelay, _ := multiaddr.NewMultiaddr("/ip4/192.168.0.103/tcp/4001/p2p/12D3KooWAcngjjMCPKketoTETkEB6w9fbdm3fjUn4gkeMNuTiskp")
+	relayInfo, _ := peer.AddrInfoFromP2pAddr(staticRelay)
+
 	host, err := libp2p.New(
 		libp2p.ListenAddrs(listenAddr),
 		libp2p.Identity(privKey),
 		libp2p.NATPortMap(),
-		libp2p.EnableAutoRelay(),
+		libp2p.EnableAutoRelayWithStaticRelays([]peer.AddrInfo{*relayInfo}),
 		libp2p.Transport(tcp.NewTCPTransport),
-		libp2p.Transport(libp2pquic.NewTransport),
-		libp2p.Transport(libp2pwebsocket.New),
 		libp2p.ConnectionManager(cm),
 	)
 	if err != nil {
