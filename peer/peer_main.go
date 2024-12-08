@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// Define the bootstrap node's multiaddress
-	bootstrapAddr, err := multiaddr.NewMultiaddr("/ip4/152.58.233.151/tcp/4001/p2p/12D3KooWEBxsxSMgTHjT97vtPQNLjQwtx29KYu6cgqxkf6tVuBnM")
+	bootstrapAddr, err := multiaddr.NewMultiaddr("/ip4/192.168.71.57/tcp/4001/p2p/12D3KooWEBxsxSMgTHjT97vtPQNLjQwtx29KYu6cgqxkf6tVuBnM")
 	if err != nil {
 		log.Fatalf("Failed to parse multiaddr: %v", err)
 	}
